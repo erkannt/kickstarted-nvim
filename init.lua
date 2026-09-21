@@ -308,6 +308,15 @@ do
       palette.bg_visual = U.blend(palette.orange.base, palette.bg, 0.15)
     end,
   }
+
+  -- Themery needs every colorscheme plugin added above (via vim.pack.add) so
+  -- they're on the runtimepath before we scan for available colorschemes.
+  vim.pack.add { gh 'zaldih/themery.nvim' }
+  require('themery').setup {
+    themes = vim.fn.getcompletion('', 'color'),
+    livePreview = true,
+  }
+
   vim.cmd.colorscheme 'nordic'
 
   -- [[ mini.nvim ]]
