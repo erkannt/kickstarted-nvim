@@ -309,11 +309,16 @@ do
     end,
   }
 
+  vim.pack.add { gh 'folke/tokyonight.nvim' }
+  ---@diagnostic disable-next-line: missing-fields
+  require('tokyonight').setup {}
+
   -- Themery needs every colorscheme plugin added above (via vim.pack.add) so
   -- they're on the runtimepath before we scan for available colorschemes.
   vim.pack.add { gh 'zaldih/themery.nvim' }
   require('themery').setup {
-    themes = vim.fn.getcompletion('', 'color'),
+    --themes = vim.fn.getcompletion('', 'color'),
+    themes = { 'nordic', 'tokyonight-night', 'tokyonight-day' },
     livePreview = true,
   }
 
