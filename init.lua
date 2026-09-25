@@ -305,7 +305,12 @@ do
   require('nordic').setup {
     after_palette = function(palette)
       local U = require 'nordic.utils'
+      -- Higher contrast for visual selection
       palette.bg_visual = U.blend(palette.orange.base, palette.bg, 0.15)
+    end,
+    on_highlight = function(highlights, palette)
+      -- Higher contrast for current line number
+      highlights.CursorLineNr = { fg = palette.magenta.base, bold = true }
     end,
   }
 
