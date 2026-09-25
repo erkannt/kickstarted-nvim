@@ -141,6 +141,16 @@ do
 
   vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+  vim.keymap.set('n', '<leader>tv', function()
+    local shown = vim.diagnostic.config().virtual_text ~= false
+    if shown then
+      vim.diagnostic.config { virtual_text = false }
+    else
+      vim.diagnostic.config { virtual_text = { source = 'if_many' } }
+    end
+    vim.notify('Diagnostic virtual text ' .. (shown and 'off' or 'on'))
+  end, { desc = '[T]oggle diagnostic [V]irtual text' })
+
   -- WINDOW NAV
   -- ----------------------------------------------------------
 
