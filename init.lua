@@ -356,16 +356,25 @@ do
   --
   -- Examples:
   --  - va)  - [V]isually select [A]round [)]paren
-  --  - yiiq - [Y]ank [I]nside [I]+1 [Q]uote
+  --  - yiNq - [Y]ank [I]nside [N]ext [Q]uote
   --  - ci'  - [C]hange [I]nside [']quote
   require('mini.ai').setup {
-    -- NOTE: Avoid conflicts with the built-in incremental selection mappings on Neovim>=0.12 (see `:help treesitter-incremental-selection`)
+    -- NOTE: Leave the built-in incremental selection mappings `an`/`in` alone (see
+    -- `:help treesitter-incremental-selection`) by parking mini.ai's "next" variants on `aN`/`iN`.
+    -- Use '' instead if you would rather drop them entirely.
     mappings = {
-      around_next = 'aa',
-      inside_next = 'ii',
+      around_next = 'aN',
+      inside_next = 'iN',
     },
     n_lines = 500,
   }
+
+  -- Incremental treesitter selection on `aa`/`ii`, as aliases for the built-in `an`/`in`.
+  --  - aa - grow the selection to the parent node
+  --  - ii - shrink the selection to the child node
+  -- NOTE: `aa` shadows mini.ai's [a]rgument textobject; `ia`/`aN`/`iN` are unaffected.
+  vim.keymap.set({ 'x', 'o' }, 'aa', 'an', { remap = true, desc = 'Select parent (outer) node' })
+  vim.keymap.set({ 'x', 'o' }, 'ii', 'in', { remap = true, desc = 'Select child (inner) node' })
 
   -- Add/delete/replace surroundings (brackets, quotes, etc.)
   --
