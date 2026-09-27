@@ -140,6 +140,7 @@ do
   }
 
   -- keybindings
+  vim.keymap.set({ 'n', 'i', 'v' }, '<C-s>', '<Esc><cmd>write<CR>', { desc = '[S]ave current file' })
   vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
   vim.keymap.set('n', '<leader>td', function()
     local shown = vim.diagnostic.config().virtual_text ~= false
