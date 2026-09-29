@@ -322,8 +322,13 @@ do
       palette.bg_visual = U.blend(palette.orange.base, palette.bg, 0.15)
     end,
     on_highlight = function(highlights, palette)
+      local U = require 'nordic.utils'
       -- Higher contrast for current line number
       highlights.CursorLineNr = { fg = palette.magenta.base, bold = true }
+      -- Visible LSP reference highlights (CursorHold)
+      highlights.LspReferenceText = { bg = U.blend(palette.cyan.base, palette.bg, 0.10) }
+      highlights.LspReferenceRead = { bg = U.blend(palette.cyan.base, palette.bg, 0.10) }
+      highlights.LspReferenceWrite = { bg = U.blend(palette.yellow.base, palette.bg, 0.1) }
     end,
   }
 
