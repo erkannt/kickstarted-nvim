@@ -12,8 +12,8 @@ require('which-key').setup {
     { '<leader>t', group = '[T]oggle' },
     { '<leader>w', group = '[W]indow' },
     { '<leader>b', group = '[B]uffer' },
+    { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
-    { 'gr', group = 'LSP Actions', mode = { 'n' } },
   },
 }
 

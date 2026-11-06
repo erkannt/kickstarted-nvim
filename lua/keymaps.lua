@@ -46,6 +46,33 @@ vim.keymap.set('n', '<leader>td', function()
   vim.notify('Diagnostic virtual text ' .. (shown and 'off' or 'on'))
 end, { desc = '[R]oggle [D]iagnostic virtual text' })
 
+-- CODE / COMMENTS
+-- ----------------------------------------------------------
+-- Remove Neovim's default `gr*` LSP keymaps (grn, gra, grr, ...) so `gr` alone is
+-- free for "goto references" without a delay. LSP keymaps are set on LspAttach in
+-- lua/kickstart/plugins/lspconfig.lua and lua/kickstart/plugins/telescope.lua.
+for _, lhs in ipairs { 'grn', 'gra', 'grx', 'grr', 'gri', 'grt' } do
+  pcall(vim.keymap.del, 'n', lhs)
+end
+pcall(vim.keymap.del, 'x', 'gra')
+
+-- Toggle comments with <leader>cc instead of the default gc/gcc.
+-- (The `gc` comment text object, e.g. `dgc`, is kept.)
+pcall(vim.keymap.del, { 'n', 'x' }, 'gc')
+pcall(vim.keymap.del, 'n', 'gcc')
+vim.keymap.set('n', '<leader>cc', function() return require('vim._comment').operator() .. '_' end, { expr = true, desc = '[C]omment line' })
+vim.keymap.set('x', '<leader>cc', function() return require('vim._comment').operator() end, { expr = true, desc = '[C]omment selection' })
+
+-- TAB PAGES
+-- ----------------------------------------------------------
+-- Tab pages aren't used (buffers are shown as tabs by mini.tabline), so disable the
+-- built-in tab page keys. This also frees `gt` for "goto type definition" in LSP buffers.
+for _, lhs in ipairs { 'gt', 'gT', 'g<Tab>', '<C-w>gt', '<C-w>gT', '<C-w>g<Tab>', '<C-w>T' } do
+  vim.keymap.set('n', lhs, '<Nop>')
+end
+vim.keymap.set({ 'n', 'i' }, '<C-PageUp>', '<Nop>')
+vim.keymap.set({ 'n', 'i' }, '<C-PageDown>', '<Nop>')
+
 -- WINDOW NAV
 -- ----------------------------------------------------------
 
