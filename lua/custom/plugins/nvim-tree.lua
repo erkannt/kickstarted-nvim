@@ -9,6 +9,9 @@ vim.pack.add {
   { src = 'https://github.com/nvim-tree/nvim-tree.lua', version = 'v1.19.0' },
 }
 
-require('nvim-tree').setup()
+require('nvim-tree').setup {
+  -- Let oil.nvim handle opening directories (e.g. `nvim .`)
+  hijack_directories = { enable = false },
+}
 
 vim.keymap.set('n', '<leader>e', '<Cmd>NvimTreeToggle<CR>', { desc = 'Toggle nvim-tree', silent = true })
