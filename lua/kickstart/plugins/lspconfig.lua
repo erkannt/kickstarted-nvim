@@ -6,6 +6,77 @@ local function gh(repo) return 'https://github.com/' .. repo end
 vim.pack.add { gh 'j-hui/fidget.nvim' }
 require('fidget').setup {}
 
+-- [[ Progress for slow requests ]]
+-- tsc and oxlint only report $/progress while loading a project; re-checking after an edit,
+-- finding references etc. happen silently inside a normal request. Show those in fidget when
+-- they take longer than `delay` ms (fast ones never appear, so nothing flickers).
+do
+  local delay = 300
+  local watched_clients = { tsc = true, oxlint = true }
+  -- Requests worth showing; background ones (semantic tokens, inlay hints, completion, ...) are skipped
+  local labels = {
+    ['textDocument/diagnostic'] = 'Checking',
+    ['textDocument/definition'] = 'Finding definition',
+    ['textDocument/typeDefinition'] = 'Finding type definition',
+    ['textDocument/implementation'] = 'Finding implementations',
+    ['textDocument/references'] = 'Finding references',
+    ['textDocument/rename'] = 'Renaming',
+    ['textDocument/prepareRename'] = 'Preparing rename',
+    ['textDocument/codeAction'] = 'Loading code actions',
+    ['textDocument/hover'] = 'Loading hover',
+    ['textDocument/documentSymbol'] = 'Loading symbols',
+    ['workspace/symbol'] = 'Searching symbols',
+    ['workspace/executeCommand'] = 'Running command',
+  }
+
+  local pending = {} ---@type table<string, { timer: uv.uv_timer_t, handle?: ProgressHandle }>
+
+  vim.api.nvim_create_autocmd('LspRequest', {
+    group = vim.api.nvim_create_augroup('lsp-slow-request-progress', { clear = true }),
+    callback = function(ev)
+      local request = ev.data.request
+      local label = labels[request.method]
+      if not label then return end
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if not client or not watched_clients[client.name] then return end
+
+      local key = ev.data.client_id .. ':' .. ev.data.request_id
+      if request.type == 'pending' then
+        if pending[key] then return end
+        local entry = { timer = assert(vim.uv.new_timer()) }
+        pending[key] = entry
+        local bufnr = request.bufnr
+        entry.timer:start(
+          delay,
+          0,
+          vim.schedule_wrap(function()
+            if pending[key] ~= entry then return end
+            local name = bufnr and vim.api.nvim_buf_is_valid(bufnr) and vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t') or nil
+            entry.handle = require('fidget.progress').handle.create {
+              title = label,
+              message = name,
+              lsp_client = { name = client.name },
+            }
+          end)
+        )
+      else -- 'complete' or 'cancel'
+        local entry = pending[key]
+        if not entry then return end
+        pending[key] = nil
+        entry.timer:stop()
+        entry.timer:close()
+        if entry.handle then
+          if request.type == 'cancel' then
+            entry.handle:cancel()
+          else
+            entry.handle:finish()
+          end
+        end
+      end
+    end,
+  })
+end
+
 --  This function gets run when an LSP attaches to a particular buffer.
 --    That is to say, every time a new file is opened that is associated with
 --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
