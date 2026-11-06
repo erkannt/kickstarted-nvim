@@ -57,6 +57,13 @@ end
 
 vim.keymap.set('n', '<leader>bj', buffer_jump, { desc = '[B]uffer [J]ump (tree of open buffers)', silent = true })
 
+-- Same tree without the jump labels: stays open until toggled off
+vim.keymap.set('n', '<leader>bt', function()
+  local command = require 'neo-tree.command'
+  if buffers_win() then return command.execute { source = 'buffers', action = 'close' } end
+  command.execute { source = 'buffers', action = 'focus', reveal = true }
+end, { desc = '[B]uffer [T]ree toggle', silent = true })
+
 require('neo-tree').setup {
   window = {
     mappings = {
