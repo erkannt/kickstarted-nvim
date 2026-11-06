@@ -36,11 +36,21 @@ vim.keymap.set({ 'x', 'o' }, 'aa', 'an', { remap = true, desc = 'Select parent (
 vim.keymap.set({ 'x', 'o' }, 'ii', 'in', { remap = true, desc = 'Select child (inner) node' })
 
 -- Add/delete/replace surroundings (brackets, quotes, etc.)
+-- Uses an `S` prefix because `s` is taken by flash.nvim (lua/custom/plugins/flash.lua)
 --
--- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
--- - sd'   - [S]urround [D]elete [']quotes
--- - sr)'  - [S]urround [R]eplace [)] [']
-require('mini.surround').setup()
+-- - Saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
+-- - Sd'   - [S]urround [D]elete [']quotes
+-- - Sr)'  - [S]urround [R]eplace [)] [']
+require('mini.surround').setup {
+  mappings = {
+    add = 'Sa',
+    delete = 'Sd',
+    find = 'Sf',
+    find_left = 'SF',
+    highlight = 'Sh',
+    replace = 'Sr',
+  },
+}
 
 -- Simple and easy statusline.
 --  You could remove this setup call if you don't like it,

@@ -13,6 +13,7 @@ require('which-key').setup {
     { '<leader>w', group = '[W]indow' },
     { '<leader>b', group = '[B]uffer' },
     { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
+    { 'S', group = '[S]urround', mode = { 'n', 'x' } },
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
   },
 }
