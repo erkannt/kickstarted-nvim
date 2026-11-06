@@ -101,6 +101,10 @@ vim.keymap.set('n', '<leader>bo', function()
   if skipped > 0 then vim.notify(('Kept %d modified buffer(s)'):format(skipped), vim.log.levels.WARN) end
 end, { desc = 'Close [O]ther buffers' })
 
+-- Cycle through buffers (the tabs in the tabline). Replaces the H/L screen-top/bottom motions.
+vim.keymap.set('n', '<S-h>', '<Cmd>bprevious<CR>', { desc = 'Previous buffer' })
+vim.keymap.set('n', '<S-l>', '<Cmd>bnext<CR>', { desc = 'Next buffer' })
+
 -- Same as <C-^>: jump to the alternate buffer; pressing again jumps back
 vim.keymap.set('n', '<leader>bb', function()
   local alt = vim.fn.bufnr '#'
