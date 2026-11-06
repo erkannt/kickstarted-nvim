@@ -35,14 +35,7 @@ vim.diagnostic.config {
 
 -- keybindings
 vim.keymap.set({ 'n', 'i', 'v' }, '<C-s>', '<Esc><cmd>write<CR>', { desc = '[S]ave current file' })
--- Toggle the diagnostics list (a location list, i.e. per-window quickfix list)
-vim.keymap.set('n', '<leader>q', function()
-  if vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 then
-    vim.cmd.lclose()
-  else
-    vim.diagnostic.setloclist()
-  end
-end, { desc = 'Toggle diagnostic [Q]uickfix list' })
+-- <leader>q toggles the diagnostics panel, see lua/custom/plugins/trouble.lua
 vim.keymap.set('n', '<leader>td', function()
   local shown = vim.diagnostic.config().virtual_text ~= false
   if shown then
