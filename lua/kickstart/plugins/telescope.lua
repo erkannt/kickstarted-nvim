@@ -28,6 +28,11 @@ require('telescope').setup {
   --   },
   -- },
   -- pickers = {}
+  defaults = {
+    -- Prompt at the top, best match directly below it
+    sorting_strategy = 'ascending',
+    layout_config = { prompt_position = 'top' },
+  },
   extensions = {
     ['ui-select'] = { require('telescope.themes').get_dropdown() },
   },
