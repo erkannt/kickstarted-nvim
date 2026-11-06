@@ -31,9 +31,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- or a suggestion from your LSP for this to activate.
     map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
 
-    -- Run the code lens on the current line, if the server provides any.
-    map('<leader>cl', vim.lsp.codelens.run, '[C]ode [L]ens')
-
     -- WARN: This is not Goto Definition, this is Goto Declaration.
     --  For example, in C this would take you to the header.
     map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
@@ -76,6 +73,21 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end
   end,
 })
+
+-- Restart all language servers, e.g. after a `git pull` changed files on disk.
+-- Reload changed buffers first so the restarted servers re-open them with the new contents.
+vim.keymap.set('n', '<leader>cl', function()
+  vim.cmd 'checktime'
+  local names = {}
+  for _, client in ipairs(vim.lsp.get_clients()) do
+    names[client.name] = true
+  end
+  local list = vim.tbl_keys(names)
+  if #list == 0 then return vim.notify('No language servers running', vim.log.levels.WARN) end
+  table.sort(list)
+  vim.cmd.lsp { args = { 'restart', unpack(list) } }
+  vim.notify('Restarted: ' .. table.concat(list, ', '))
+end, { desc = '[C]ode: Re-[L]oad buffers language servers' })
 
 -- [[ Inter-file pull diagnostics ]]
 -- Neovim only re-pulls diagnostics for the buffer you edited. Servers that declare
