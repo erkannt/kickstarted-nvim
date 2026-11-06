@@ -87,7 +87,12 @@ local servers = {
   pyright = {},
   -- TypeScript 7 native language server (`tsc --lsp`); prefers a >=7 tsc in node_modules/.bin, else Mason's
   tsc = {},
-  oxlint = {},
+  oxlint = {
+    settings = {
+      run = 'onSave', -- lint on write instead of every keystroke
+      typeAware = false, -- set explicitly so lspconfig doesn't auto-enable it when tsgolint is found
+    },
+  },
   --
   -- Some languages (like rust) have entire language plugins that can be useful:
   --    https://github.com/mrcjkb/rustaceanvim
