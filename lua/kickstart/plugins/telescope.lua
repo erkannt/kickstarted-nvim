@@ -107,13 +107,43 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 -- Override default behavior and theme when searching
-vim.keymap.set('n', '<leader>/', function()
-  -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-  builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-    winblend = 10,
-    previewer = false,
-  })
-end, { desc = '[/] Fuzzily search in current buffer' })
+-- Live grep across the project, optionally limited to a path.
+-- Type `<text>  <path>` (two spaces) to only search files whose path contains <path>,
+-- e.g. `canuse  src` or `setup  plugins/tele`. Without two spaces, the whole prompt is
+-- the search text.
+local function path_grep()
+  local conf = require('telescope.config').values
+  local finders = require 'telescope.finders'
+  local make_entry = require 'telescope.make_entry'
+  local opts = { cwd = vim.uv.cwd() }
+
+  require('telescope.pickers')
+    .new(opts, {
+      prompt_title = 'Grep (text  path)',
+      debounce = 100,
+      finder = finders.new_async_job {
+        command_generator = function(prompt)
+          if not prompt or prompt == '' then return nil end
+          local text, path = prompt:match '^(.-)  (.*)$'
+          if not text then text = prompt end
+          if text == '' then return nil end
+
+          local args = vim.deepcopy(conf.vimgrep_arguments)
+          if path and path ~= '' then
+            -- Match files whose path contains <path>, whether it ends in a file or a directory name
+            vim.list_extend(args, { '--iglob', '**/*' .. path .. '*', '--iglob', '**/*' .. path .. '*/**' })
+          end
+          return vim.list_extend(args, { '-e', text })
+        end,
+        entry_maker = make_entry.gen_from_vimgrep(opts),
+        cwd = opts.cwd,
+      },
+      previewer = conf.grep_previewer(opts),
+      sorter = require('telescope.sorters').empty(),
+    })
+    :find()
+end
+vim.keymap.set('n', '<leader>/', path_grep, { desc = '[/] Grep project (`text  path` to limit path)' })
 
 -- It's also possible to pass additional configuration options.
 --  See `:help telescope.builtin.live_grep()` for information about particular keys
