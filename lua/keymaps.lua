@@ -72,7 +72,7 @@ vim.keymap.set('x', '<leader>cc', function() return require('vim._comment').oper
 
 -- TAB PAGES
 -- ----------------------------------------------------------
--- Tab pages aren't used (buffers are shown as tabs by mini.tabline), so disable the
+-- Tab pages aren't used (buffers are managed via the buffer tree, <leader>bt), so disable the
 -- built-in tab page keys. This also frees `gt` for "goto type definition" in LSP buffers.
 for _, lhs in ipairs { 'gt', 'gT', 'g<Tab>', '<C-w>gt', '<C-w>gT', '<C-w>g<Tab>', '<C-w>T' } do
   vim.keymap.set('n', lhs, '<Nop>')
@@ -135,9 +135,45 @@ vim.keymap.set('n', '<leader>bo', function()
   if skipped > 0 then vim.notify(('Kept %d modified buffer(s)'):format(skipped), vim.log.levels.WARN) end
 end, { desc = 'Close [O]ther buffers' })
 
--- Cycle through buffers (the tabs in the tabline). Replaces the H/L screen-top/bottom motions.
-vim.keymap.set('n', '<S-h>', '<Cmd>bprevious<CR>', { desc = 'Previous buffer' })
-vim.keymap.set('n', '<S-l>', '<Cmd>bnext<CR>', { desc = 'Next buffer' })
+-- Cycle through buffers in most-recently-used order, like alt-tab: one <C-t> goes to the
+-- previous buffer, pressing it again within a second keeps going further back (the order is
+-- frozen while cycling). Replaces <C-t> tag-stack pop; use <C-o> to jump back instead.
+do
+  -- Exact recency (getbufinfo's `lastused` only has 1-second resolution)
+  local tick, used = 0, {}
+  vim.api.nvim_create_autocmd('BufEnter', {
+    group = vim.api.nvim_create_augroup('buffer-mru', { clear = true }),
+    callback = function(ev)
+      tick = tick + 1
+      used[ev.buf] = tick
+    end,
+  })
+
+  local cycle = { list = {}, index = 1, last = 0 }
+  vim.keymap.set('n', '<C-t>', function()
+    local now = vim.uv.now()
+    if now - cycle.last > 1000 then
+      local bufs = vim.tbl_filter(is_file_buf, vim.api.nvim_list_bufs())
+      local current = vim.api.nvim_get_current_buf()
+      -- current buffer first, then the rest by most recent use
+      table.sort(bufs, function(a, b)
+        if (a == current) ~= (b == current) then return a == current end
+        return (used[a] or 0) > (used[b] or 0)
+      end)
+      cycle.list, cycle.index = bufs, 1
+    end
+    cycle.last = now
+    -- advance to the next still-valid buffer in the frozen list
+    for _ = 1, #cycle.list do
+      cycle.index = cycle.index % #cycle.list + 1
+      local buf = cycle.list[cycle.index]
+      if vim.api.nvim_buf_is_valid(buf) and is_file_buf(buf) and buf ~= vim.api.nvim_get_current_buf() then
+        return vim.api.nvim_set_current_buf(buf)
+      end
+    end
+    vim.notify('No other buffer', vim.log.levels.INFO)
+  end, { desc = 'Cycle buffers (most recent first)' })
+end
 
 -- Same as <C-^>: jump to the alternate buffer; pressing again jumps back
 vim.keymap.set('n', '<leader>bb', function()

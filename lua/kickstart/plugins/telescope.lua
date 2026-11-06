@@ -88,7 +88,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- Jump to the definition of the word under your cursor.
     -- This is where a variable was first declared, or where a function is defined, etc.
-    -- To jump back, press <C-t>.
+    -- To jump back, press <C-o> (<C-t> cycles buffers, see lua/keymaps.lua).
     vim.keymap.set('n', 'gd', builtin.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
 
     -- Fuzzy find all the symbols in your current document.
