@@ -85,7 +85,8 @@ local servers = {
   -- clangd = {},
   gopls = {},
   pyright = {},
-  vtsls = {},
+  -- TypeScript 7 native language server (`tsc --lsp`); prefers a >=7 tsc in node_modules/.bin, else Mason's
+  tsc = {},
   oxlint = {},
   --
   -- Some languages (like rust) have entire language plugins that can be useful:
