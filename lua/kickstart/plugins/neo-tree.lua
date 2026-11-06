@@ -13,6 +13,13 @@ vim.keymap.set('n', '<leader>e', function()
 end, { desc = 'Toggle file [e]xplorer', silent = true })
 
 require('neo-tree').setup {
+  window = {
+    mappings = {
+      -- Navigate the tree like snacks explorer
+      ['h'] = 'close_node', -- collapse dir, or jump to and collapse the parent
+      ['l'] = 'open', -- expand/collapse dir, or open file
+    },
+  },
   filesystem = {
     -- Setting the root (`.` / `<bs>`) only changes the view, not Neovim's cwd
     bind_to_cwd = false,
