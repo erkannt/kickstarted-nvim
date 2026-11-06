@@ -85,7 +85,36 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
-vim.keymap.set('n', '<leader>wo', '<Cmd>only<CR>', { desc = 'Close [O]ther windows' })
+-- :only, but run from a panel (quickfix, neo-tree, trouble, help, terminal, ...) it keeps the
+-- file window you were last in, instead of keeping the panel and closing your code.
+local function is_file_win(win)
+  if vim.api.nvim_win_get_config(win).relative ~= '' then return false end
+  local buf = vim.api.nvim_win_get_buf(win)
+  return vim.bo[buf].buflisted and vim.bo[buf].buftype == ''
+end
+
+vim.keymap.set('n', '<leader>wo', function()
+  local keep = vim.api.nvim_get_current_win()
+  if not is_file_win(keep) then
+    local prev = vim.fn.win_getid(vim.fn.winnr '#')
+    if prev ~= 0 and is_file_win(prev) then
+      keep = prev
+    else
+      -- fall back to the file window showing the most recently used buffer
+      local best
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if is_file_win(win) then
+          local used = vim.fn.getbufinfo(vim.api.nvim_win_get_buf(win))[1].lastused
+          if not best or used > best.used then best = { win = win, used = used } end
+        end
+      end
+      if not best then return vim.notify('No file window to keep', vim.log.levels.INFO) end
+      keep = best.win
+    end
+    vim.api.nvim_set_current_win(keep)
+  end
+  vim.cmd.only()
+end, { desc = 'Close [O]ther windows' })
 
 -- BUFFERS
 -- ----------------------------------------------------------
