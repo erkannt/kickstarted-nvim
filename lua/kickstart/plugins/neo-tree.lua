@@ -7,14 +7,16 @@ vim.pack.add {
   'https://github.com/MunifTanjim/nui.nvim',
 }
 
-vim.keymap.set('n', '\\', '<Cmd>Neotree reveal<CR>', { desc = 'NeoTree reveal', silent = true })
+-- Always (re)open rooted at the cwd, so a root set inside neo-tree is only temporary
+vim.keymap.set('n', '<leader>e', function()
+  require('neo-tree.command').execute { toggle = true, reveal = true, dir = vim.fn.getcwd() }
+end, { desc = 'Toggle file [e]xplorer', silent = true })
 
 require('neo-tree').setup {
   filesystem = {
-    window = {
-      mappings = {
-        ['\\'] = 'close_window',
-      },
-    },
+    -- Setting the root (`.` / `<bs>`) only changes the view, not Neovim's cwd
+    bind_to_cwd = false,
+    -- Let oil.nvim handle opening directories (e.g. `nvim .`)
+    hijack_netrw_behavior = 'disabled',
   },
 }
