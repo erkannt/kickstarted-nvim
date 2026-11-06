@@ -77,6 +77,60 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
+-- [[ Inter-file pull diagnostics ]]
+-- Neovim only re-pulls diagnostics for the buffer you edited. Servers that declare
+-- `interFileDependencies` (e.g. TypeScript 7's `tsc --lsp`) can have other files' diagnostics
+-- change too, so re-pull visible buffers after edits and any buffer when it is entered.
+do
+  local group = vim.api.nvim_create_augroup('lsp-interfile-diagnostics', { clear = true })
+
+  ---@param client vim.lsp.Client
+  local function has_interfile_deps(client)
+    local provider = client.server_capabilities.diagnosticProvider
+    return type(provider) == 'table' and provider.interFileDependencies == true
+  end
+
+  ---@param bufnr integer
+  ---@param client_id? integer limit to this client
+  local function repull(bufnr, client_id)
+    if not vim.api.nvim_buf_is_loaded(bufnr) then return end
+    for _, client in ipairs(vim.lsp.get_clients { bufnr = bufnr, id = client_id, method = 'textDocument/diagnostic' }) do
+      if has_interfile_deps(client) then
+        vim.lsp.diagnostic._refresh(bufnr, client.id) -- private, but what Neovim itself calls on didChange
+      end
+    end
+  end
+
+  vim.api.nvim_create_autocmd('BufEnter', { group = group, callback = function(ev) repull(ev.buf) end })
+
+  local timer = assert(vim.uv.new_timer())
+  vim.api.nvim_create_autocmd('LspNotify', {
+    group = group,
+    callback = function(ev)
+      local method = ev.data.method
+      if method ~= 'textDocument/didChange' and method ~= 'textDocument/didSave' then return end
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if not client or not has_interfile_deps(client) then return end
+      local changed, client_id = ev.buf, client.id
+      timer:stop()
+      timer:start(
+        500,
+        0,
+        vim.schedule_wrap(function()
+          local seen = { [changed] = true } -- Neovim already re-pulls the edited buffer itself
+          for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            if not seen[buf] then
+              seen[buf] = true
+              repull(buf, client_id)
+            end
+          end
+        end)
+      )
+    end,
+  })
+end
+
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 --  See `:help lsp-config` for information about keys and how to configure
