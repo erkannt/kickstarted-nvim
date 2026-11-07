@@ -70,6 +70,9 @@ gitsigns.setup {
   -- Use the native quickfix window for hunk lists (the live refresh above targets it);
   -- otherwise gitsigns opens them in trouble.nvim when that is installed.
   trouble = false,
+  -- Also attach to files git doesn't track yet, so the hunk keymaps exist there too
+  -- (the whole file shows as one added hunk until it's `git add`ed).
+  attach_to_untracked = true,
   signs = {
     add = { text = '+' }, ---@diagnostic disable-line: missing-fields
     change = { text = '~' }, ---@diagnostic disable-line: missing-fields
