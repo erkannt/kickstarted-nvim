@@ -77,6 +77,71 @@ do
   })
 end
 
+-- [[ Fix all + format ]]
+-- <leader>cf runs the source actions below (for servers attached to the current buffer), in order,
+-- waiting for each to be applied, then formats every open file buffer with conform.
+local fix_all_steps = {
+  { 'oxlint', 'source.fixAll.oxc' },
+  { 'tsc', 'source.fixAll' },
+  { 'tsc', 'source.removeUnusedImports' },
+}
+local fix_all_clients = {} ---@type table<string, true>
+for _, step in ipairs(fix_all_steps) do
+  fix_all_clients[step[1]] = true
+end
+
+local function format_all_buffers()
+  local conform = require 'conform'
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted and vim.bo[buf].buftype == '' and vim.bo[buf].modifiable then
+      conform.format { bufnr = buf, async = true }
+    end
+  end
+end
+
+--- Request the `kind` source action from `client` for the whole buffer, apply it, then call `done`.
+---@param client vim.lsp.Client
+---@param bufnr integer
+---@param kind string
+---@param done fun()
+local function run_source_action(client, bufnr, kind, done)
+  local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+  params.range = { start = { line = 0, character = 0 }, ['end'] = { line = vim.api.nvim_buf_line_count(bufnr), character = 0 } }
+  params.context = { only = { kind }, diagnostics = {} }
+
+  local function apply(action)
+    if type(action.command) == 'string' then -- a bare Command rather than a CodeAction
+      return client:exec_cmd(action --[[@as lsp.Command]], { bufnr = bufnr }, vim.schedule_wrap(done))
+    end
+    if action.edit then vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding) end
+    if action.command then return client:exec_cmd(action.command, { bufnr = bufnr }, vim.schedule_wrap(done)) end
+    done()
+  end
+
+  client:request('textDocument/codeAction', params, function(err, actions)
+    if err then vim.notify(('%s %s failed: %s'):format(client.name, kind, err.message), vim.log.levels.ERROR) end
+    local action = actions and actions[1]
+    if not action then return done() end
+    if action.edit or action.command or not client:supports_method 'codeAction/resolve' then return apply(action) end
+    client:request('codeAction/resolve', action, function(_, resolved) apply(resolved or action) end, bufnr)
+  end, bufnr)
+end
+
+---@param bufnr integer
+local function fix_all_and_format(bufnr)
+  local steps = {}
+  for _, step in ipairs(fix_all_steps) do
+    local client = vim.lsp.get_clients({ bufnr = bufnr, name = step[1] })[1]
+    if client then table.insert(steps, { client, step[2] }) end
+  end
+  local function next_step(i)
+    local step = steps[i]
+    if not step then return format_all_buffers() end
+    run_source_action(step[1], bufnr, step[2], function() next_step(i + 1) end)
+  end
+  next_step(1)
+end
+
 --  This function gets run when an LSP attaches to a particular buffer.
 --    That is to say, every time a new file is opened that is associated with
 --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
@@ -112,6 +177,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
     --
     -- When you move your cursor, the highlights will be cleared (the second autocommand).
     local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+    -- Run oxlint and tsc fix-all (and tsc remove-unused-imports) on this buffer, then format every open file buffer.
+    if client and fix_all_clients[client.name] then map('<leader>cf', function() fix_all_and_format(event.buf) end, '[C]ode [F]ix all + format all buffers') end
+
     if client and client:supports_method('textDocument/documentHighlight', event.buf) then
       local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
       vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
