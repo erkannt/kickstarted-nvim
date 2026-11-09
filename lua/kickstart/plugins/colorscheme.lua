@@ -18,6 +18,10 @@ require('nordic').setup {
     highlights.LspReferenceText = { bg = U.blend(palette.cyan.base, palette.bg, 0.10) }
     highlights.LspReferenceRead = { bg = U.blend(palette.cyan.base, palette.bg, 0.10) }
     highlights.LspReferenceWrite = { bg = U.blend(palette.yellow.base, palette.bg, 0.1) }
+    -- rainbow-delimiters: nordic only defines 5 of the 7 levels. Cyan uses blue1 because
+    -- nordic's cyan is nearly identical to the blue2 it uses for RainbowDelimiterBlue.
+    highlights.RainbowDelimiterViolet = { fg = palette.magenta.bright }
+    highlights.RainbowDelimiterCyan = { fg = palette.blue1 }
   end,
 }
 

@@ -82,6 +82,10 @@
       "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
       "src": "https://github.com/nvim-lua/plenary.nvim"
     },
+    "rainbow-delimiters.nvim": {
+      "rev": "65734f76783705255d9ede8a6e4692e1572801a5",
+      "src": "https://github.com/HiPhish/rainbow-delimiters.nvim"
+    },
     "snacks.nvim": {
       "rev": "e6fd58c82f2f3fcddd3fe81703d47d6d48fc7b9f",
       "src": "https://github.com/folke/snacks.nvim"
