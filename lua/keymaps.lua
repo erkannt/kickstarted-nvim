@@ -63,6 +63,15 @@ pcall(vim.keymap.del, 'n', 'gcc')
 vim.keymap.set('n', '<leader>cc', function() return require('vim._comment').operator() .. '_' end, { expr = true, desc = '[C]omment line' })
 vim.keymap.set('x', '<leader>cc', function() return require('vim._comment').operator() end, { expr = true, desc = '[C]omment selection' })
 
+-- Copy the current buffer's path (relative to the cwd) to the system clipboard.
+vim.keymap.set('n', '<leader>cp', function()
+  local name = vim.api.nvim_buf_get_name(0)
+  if name == '' then return vim.notify('Buffer has no file path', vim.log.levels.WARN) end
+  local path = vim.fn.fnamemodify(name, ':.')
+  vim.fn.setreg('+', path)
+  vim.notify('Copied ' .. path)
+end, { desc = '[C]opy buffer [P]ath' })
+
 -- TAB PAGES
 -- ----------------------------------------------------------
 -- Tab pages aren't used (buffers are managed via the buffer tree, <leader>bt), so disable the
