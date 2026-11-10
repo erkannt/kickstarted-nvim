@@ -72,6 +72,16 @@ vim.keymap.set('n', '<leader>cp', function()
   vim.notify('Copied ' .. path)
 end, { desc = '[C]opy buffer [P]ath' })
 
+-- Insert a random UUID v4 after the cursor (random bytes from libuv's CSPRNG).
+vim.keymap.set('n', '<leader>cu', function()
+  local b = { vim.uv.random(16):byte(1, 16) }
+  b[7] = bit.bor(bit.band(b[7], 0x0f), 0x40) -- version 4
+  b[9] = bit.bor(bit.band(b[9], 0x3f), 0x80) -- RFC 4122 variant
+  local hex = string.format(string.rep('%02x', 16), unpack(b))
+  local uuid = ('%s-%s-%s-%s-%s'):format(hex:sub(1, 8), hex:sub(9, 12), hex:sub(13, 16), hex:sub(17, 20), hex:sub(21, 32))
+  vim.api.nvim_put({ uuid }, 'c', true, true)
+end, { desc = '[C]ode insert [U]UID' })
+
 -- TAB PAGES
 -- ----------------------------------------------------------
 -- Tab pages aren't used (buffers are managed via the buffer tree, <leader>bt), so disable the
