@@ -11,7 +11,6 @@ local telescope_plugins = {
   gh 'nvim-lua/plenary.nvim',
   gh 'nvim-telescope/telescope.nvim',
   gh 'nvim-telescope/telescope-ui-select.nvim',
-  { src = gh 'nvim-telescope/telescope-frecency.nvim', version = '1.2.2' },
 }
 if vim.fn.executable 'make' == 1 then table.insert(telescope_plugins, gh 'nvim-telescope/telescope-fzf-native.nvim') end
 
@@ -36,33 +35,18 @@ require('telescope').setup {
   },
   extensions = {
     ['ui-select'] = { require('telescope.themes').get_dropdown() },
-    frecency = {
-      default_workspace = 'CWD', -- only this project's files, plus all its other files below the history
-      -- Substring matching: space-separated pieces of the path (e.g. `kick tele`). The
-      -- 'fuzzy' matcher scores in pure Lua and was too slow on large repos.
-      matcher = 'default',
-      show_scores = false,
-      -- Silently drop history entries for deleted files (checked once per session)
-      db_safe_mode = false,
-    },
   },
 }
 
 -- Enable Telescope extensions if they are installed
 pcall(require('telescope').load_extension, 'fzf')
 pcall(require('telescope').load_extension, 'ui-select')
-pcall(require('telescope').load_extension, 'frecency')
 
 -- See `:help telescope.builtin`
 local builtin = require 'telescope.builtin'
 vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-vim.keymap.set(
-  'n',
-  '<leader><leader>',
-  function() require('telescope').extensions.frecency.frecency { workspace = 'CWD' } end,
-  { desc = 'Search Files (recent first)' }
-)
+-- <leader><leader> (find files, recent first) lives in custom/plugins/snacks.lua
 vim.keymap.set({ 'n', 'v' }, '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
