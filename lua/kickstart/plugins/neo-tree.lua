@@ -77,5 +77,15 @@ require('neo-tree').setup {
     bind_to_cwd = false,
     -- Let oil.nvim handle opening directories (e.g. `nvim .`)
     hijack_netrw_behavior = 'disabled',
+    -- Watch expanded dirs on disk, so changes made outside Neovim (lint fixes,
+    -- git checkout, ...) refresh the tree and its git symbols
+    use_libuv_file_watcher = true,
   },
 }
+
+-- Git-only changes made outside Neovim (git add/commit) don't touch watched
+-- files, so re-check git status whenever Neovim regains focus
+vim.api.nvim_create_autocmd('FocusGained', {
+  group = vim.api.nvim_create_augroup('neo-tree-git-refresh', { clear = true }),
+  callback = function() require('neo-tree.events').fire_event 'git_event' end,
+})

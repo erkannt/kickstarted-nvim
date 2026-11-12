@@ -230,6 +230,15 @@ end, { desc = 'Switch to previous [B]uffer' })
 -- matching blink's super-tab. Blink's <Tab> falls back to this mapping.
 vim.keymap.set('i', '<Tab>', function() return vim.fn.pumvisible() == 1 and '<C-y>' or '<Tab>' end, { expr = true, desc = 'Accept native completion with Tab' })
 
+-- Reload buffers changed on disk outside Neovim ('autoread' only acts when a check runs)
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold' }, {
+  desc = 'Check for files changed outside Neovim',
+  group = vim.api.nvim_create_augroup('auto-checktime', { clear = true }),
+  callback = function()
+    if vim.fn.mode() ~= 'c' and vim.fn.getcmdwintype() == '' then vim.cmd 'checktime' end
+  end,
+})
+
 -- YANK HIGHLIGHT
 -- ----------------------------------------------------------
 vim.api.nvim_create_autocmd('TextYankPost', {
