@@ -17,19 +17,19 @@ require('conform').setup {
   },
   -- You can also specify external formatters in here.
   formatters_by_ft = {
-    -- Prettier for web files, but only in projects that configure prettier (see
-    -- `formatters.prettier` below). Elsewhere these fall back to LSP formatting.
-    javascript = { 'prettier' },
-    javascriptreact = { 'prettier' },
-    typescript = { 'prettier' },
-    typescriptreact = { 'prettier' },
-    json = { 'prettier' },
-    jsonc = { 'prettier' },
-    css = { 'prettier' },
-    scss = { 'prettier' },
-    html = { 'prettier' },
-    yaml = { 'prettier' },
-    markdown = { 'prettier' },
+    -- Prettier (via the prettierd daemon) for web files, but only in projects that
+    -- configure prettier (see `formatters.prettierd` below). Elsewhere these fall back to LSP formatting.
+    javascript = { 'prettierd' },
+    javascriptreact = { 'prettierd' },
+    typescript = { 'prettierd' },
+    typescriptreact = { 'prettierd' },
+    json = { 'prettierd' },
+    jsonc = { 'prettierd' },
+    css = { 'prettierd' },
+    scss = { 'prettierd' },
+    html = { 'prettierd' },
+    yaml = { 'prettierd' },
+    markdown = { 'prettierd' },
     -- rust = { 'rustfmt' },
     -- Conform can also run multiple formatters sequentially
     -- python = { "isort", "black" },
@@ -39,9 +39,9 @@ require('conform').setup {
   },
   formatters = {
     -- Only run when a prettier config (.prettierrc*, prettier.config.*, or a "prettier"
-    -- key in package.json) is found. Uses the project's node_modules/.bin/prettier if
-    -- present, otherwise the Mason-installed one.
-    prettier = { require_cwd = true },
+    -- key in package.json) is found. prettierd uses the project's own prettier (and
+    -- plugins) from node_modules if present, otherwise its bundled one.
+    prettierd = { require_cwd = true },
   },
 }
 
