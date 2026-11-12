@@ -104,6 +104,8 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+vim.keymap.set('n', '<leader>|', '<Cmd>vsplit<CR>', { desc = 'Split window vertically' })
+
 -- :only, but run from a panel (quickfix, neo-tree, trouble, help, terminal, ...) it keeps the
 -- file window you were last in, instead of keeping the panel and closing your code.
 local function is_file_win(win)
