@@ -226,6 +226,10 @@ vim.keymap.set('n', '<leader>bb', function()
   vim.api.nvim_set_current_buf(alt)
 end, { desc = 'Switch to previous [B]uffer' })
 
+-- Accept native completion menu (<C-x><C-f>, <C-x><C-l>, ...) with <Tab>,
+-- matching blink's super-tab. Blink's <Tab> falls back to this mapping.
+vim.keymap.set('i', '<Tab>', function() return vim.fn.pumvisible() == 1 and '<C-y>' or '<Tab>' end, { expr = true, desc = 'Accept native completion with Tab' })
+
 -- YANK HIGHLIGHT
 -- ----------------------------------------------------------
 vim.api.nvim_create_autocmd('TextYankPost', {
